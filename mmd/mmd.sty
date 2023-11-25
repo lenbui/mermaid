@@ -1,0 +1,38 @@
+%% Copyright (C) 2023 Len Bui
+%%
+%% SPDX-License-Identifier: LPPL-1.3c+
+\NeedsTeXFormat{LaTeX2e}\relax
+\ProvidesPackage{mmd}
+\RequirePackage{fancyvrb}
+\RequirePackage{l3keys2e}
+\RequirePackage{xparse}
+\RequirePackage{ifthen}
+\RequirePackage{adjustbox}
+\RequirePackage{luacode}
+
+% \jobname has an encoding issue if the .tex filename includes a multibyte string.
+% One needs to redefine MmdJobname to fix it
+\def\MmdJobname{\jobname}
+
+%hint from https://tex.stackexchange.com/a/86355/9075
+\makeatletter
+\def\maxwidth#1{\ifdim\Gin@nat@width>#1 #1\else\Gin@nat@width\fi}
+\makeatother
+
+\newcounter{FigNum}
+\setcounter{FigNum}{1}
+
+\makeatletter
+  \NewDocumentEnvironment{mmd}{}{%
+    \VerbatimOut{\MmdJobname\arabic{FigNum}mmd.in}}
+  {%
+    \endVerbatimOut
+    \directlua{
+      local jobname=\luastring{\MmdJobname\arabic{FigNum}}
+      require("mmd.lua")
+      convertToDiagram(jobname)
+    }
+    \includegraphics[width=\maxwidth{\textwidth}]{\MmdJobname\arabic{FigNum}mmd.pdf}
+    \stepcounter{FigNum}
+  }
+\makeatother
